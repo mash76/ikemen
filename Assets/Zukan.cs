@@ -5,15 +5,15 @@ using UnityEngine.UI;
 
 using DG.Tweening;
 
-public class Zukan : MonoBehaviour
+public class zukan : MonoBehaviour
 {
-
 	public float zukanX = 0f;
 	public float mouseX = 0f; 
     public bool showStatus = false;
     private float scrollSpeed = 2.5f;
 
-    private Vector2 topLeft = new Vector2(-600.0f,250.0f);
+    // 図鑑項目の開始位置と幅
+    private Vector2 topLeft = new Vector2(-800.0f,450.0f);
     private float Xmargin = 220.0f;
     private float Ymargin = 220.0f;
 
@@ -27,40 +27,56 @@ public class Zukan : MonoBehaviour
 
         // 図鑑を並べる
         GameObject prefab = (GameObject)Resources.Load ("zukanQuestion");
+        
         // プレハブからインスタンスを生成
+
+        //図鑑
         GameObject cv = GameObject.Find("Canvas");
         GameObject zukanBase = GameObject.Find("Canvas/zukanLayer/zukan");
 
+        // 図鑑の顔をそれぞれ生成
         zukanImages = new GameObject[ gameManager.ikemenTotalCount +1 ];
-        for (int i =0; i<= 4; i++){
-            for (int j =0; j<= 8; j++){
-                int ikemenCode = i*8 + j +1;
-                GameObject p1 = Instantiate (prefab, new Vector3( topLeft.x + j * Xmargin, topLeft.y - i * Ymargin, 0.1f), Quaternion.identity); 
+        int ikemenCt = 1;
+        for (int cate =1; cate<= 4; cate++){
+            for (int num =1; num<= 4; num++){
+                GameObject p1 = Instantiate (prefab, 
+                                new Vector3( topLeft.x + num * Xmargin, topLeft.y - cate * Ymargin, 0.1f), 
+                                Quaternion.identity);
                 p1.transform.SetParent(zukanBase.transform, false);
-                p1.name = "question" + i.ToString() + j.ToString();
-                if (ikemenCode <= gameManager.ikemenTotalCount){
-                    Sprite sp1 = Resources.Load<Sprite>("ikemen" + ikemenCode.ToString() + "_1");
+                p1.name = "question" + cate.ToString() + num.ToString();
+                if (ikemenCt <= gameManager.ikemenTotalCount){
+                    Sprite sp1 = Resources.Load<Sprite>("ikemen" + cate.ToString() + num.ToString() + "_1");
                     p1.GetComponent<Image>().overrideSprite = sp1;
-                    Debug.Log(ikemenCode);
-                    zukanImages[ikemenCode] = p1;
+
+                    //シルエットにする
+                    if (Random.Range( 0,5) < 3){
+                        //p1.GetComponent<Image>().color
+                    }
+                    zukanImages[ikemenCt] = p1;
                 }
+                ikemenCt++;
             }
         }
         this.gameObject.transform.parent.gameObject.SetActive(false);
-
     }
-
-
 
     // Update is called once per frame
     void Update()
     {
         for(int i=1; i<= gameManager.ikemenTotalCount; i++){
-            if (Random.Range( 0,10000) < 15){
+            if (Random.Range( 0,10000) < 100){
+                
                 GameObject face = zukanImages[i];
 
-                Sprite sp1 = Resources.Load<Sprite>("ikemen" + i.ToString() + "_1");
-                Sprite sp2 = Resources.Load<Sprite>("ikemen" + i.ToString() + "_2");
+                int cate = (int)Mathf.Floor((i -1) / 4) + 1;
+                int num = ((i -1)  % 4 ) +1 ;
+
+
+                string ikemenStr = cate.ToString() + num.ToString();
+                Debug.Log("zukan anime " + i.ToString() + " cate " + cate.ToString() + " num " + num.ToString() + " ikemenStr" + ikemenStr);
+
+                Sprite sp1 = Resources.Load<Sprite>("ikemen" + ikemenStr.ToString() + "_1");
+                Sprite sp2 = Resources.Load<Sprite>("ikemen" + ikemenStr.ToString() + "_2");
                 face.GetComponent<Image>().overrideSprite = sp2;
 
 
@@ -74,7 +90,6 @@ public class Zukan : MonoBehaviour
                         face.GetComponent<Image>().overrideSprite = sp1;
                     })
                     .Play();
-
             }
         }
     }

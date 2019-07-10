@@ -27,8 +27,10 @@ public class gameManager : MonoBehaviour
     public static GameObject notificationImageObj;
 
     //図鑑
-    public static int[] aryZukan;
-    public static int ikemenTotalCount = 6;
+    
+    public static Dictionary<string, string> aryZukan;
+
+    public static int ikemenTotalCount = 4*4;
 
 
     // 統計用の数字
@@ -37,21 +39,42 @@ public class gameManager : MonoBehaviour
 
     void Start()
     {
+
+
+
+
+
+
         // sound
         s1 = GameObject.Find("nyu1");
 
         // 樹になるface
-        faces = new GameObject[ faceCount ];
-        for (int i=0; i<faceCount; i++){
-            faces[i] = GameObject.Find("Canvas/faceLayer/face" + i);
-            Debug.Log(faces[i]);
+        faces = new GameObject[ faceCount +1 ];
+        Sprite sp1 = Resources.Load<Sprite>("ikemen11_1");
+
+        GameObject prefab = (GameObject)Resources.Load ("face");
+        if (prefab == null) Debug.Log("prefab null");
+
+
+        // 木の実のイケメンをつける
+        for (int num=1; num <= faceCount; num++){
+            GameObject base1 = GameObject.Find("Canvas/faceLayer/point" + num.ToString());
+            faces[num] = Instantiate (prefab, 
+                            Vector3.zero, 
+                            Quaternion.identity); 
+            faces[num].name = "face" + num.ToString();
+            dbg.isGONull(faces[num]);
+            faces[num].GetComponent<Image>().overrideSprite = sp1;
+            faces[num].transform.SetParent(base1.transform, false);
+            Debug.Log(faces[num]);
         }
 
-        // 図鑑初期化
-        aryZukan = new int[ikemenTotalCount];
-        for (int i=0; i< ikemenTotalCount; i++){
-            aryZukan[i] = 0;
+        // 図鑑関連 初期化
+        aryZukan = new Dictionary<string, string> ();
+        for (int i=1; i<= ikemenTotalCount; i++){
+            aryZukan[i.ToString()] = "0";
         }
+
         //score
         score = 0;
         scoreObj = GameObject.Find("Canvas/UILayer/score");
@@ -73,9 +96,9 @@ public class gameManager : MonoBehaviour
     void Update()
     {
         // 非表示中の顔のタイマーカウント
-         for (int i=0;i<faceCount;i++){
+         for (int i=1;i<=faceCount; i++){
             if (faces[i].activeSelf == false){
-                ikemen1 script = faces[i].GetComponent<ikemen1>();
+                ikemen script = faces[i].GetComponent<ikemen>();
                 script.count++;
                 if (script.count > script.interval1){
                     script.resetSprite();
@@ -93,6 +116,9 @@ public class gameManager : MonoBehaviour
         notificationObj.SetActive(true);
         notificationObj.transform.localScale = Vector3.zero; 
         notificationImageObj.GetComponent<Image>().overrideSprite = sp1;
+
+        notification nscript = notificationObj.GetComponent<notification>();
+        nscript.setStar(Random.Range(1,4) );
 
         Sequence seq = DOTween.Sequence();
         seq.Append(notificationObj.transform.DOScale(Vector3.one, 0.5f).SetEase(Ease.OutExpo))
@@ -117,7 +143,7 @@ public class gameManager : MonoBehaviour
 
     public static void setScore(int val){
          score += val;
-         Debug.Log(score);
+         Debug.Log("score " +  score.ToString() + " " + val.ToString());
          Text t1 = scoreObj.GetComponent<Text>(); 
          t1.text = score.ToString();
 
